@@ -16,4 +16,12 @@ namespace {
     if (in_array(basename(dirname(__FILE__)), $disabled_dirs)) {
         die;
     }
+    define('KB_IN_BYTES', 1024);
+    define('MB_IN_BYTES', 1024 * KB_IN_BYTES);
+    define('GB_IN_BYTES', 1024 * MB_IN_BYTES);
+    define('DUPLICATOR_PHP_MAX_MEMORY', 4096 * MB_IN_BYTES);
+    date_default_timezone_set('UTC'); // Some machines don’t have this set so just do it here.
+    @ignore_user_abort(true);
+
+    
     
