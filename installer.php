@@ -22,6 +22,23 @@ namespace {
     define('DUPLICATOR_PHP_MAX_MEMORY', 4096 * MB_IN_BYTES);
     date_default_timezone_set('UTC'); // Some machines don’t have this set so just do it here.
     @ignore_user_abort(true);
+    function isIniValChangeable($setting)
+    {
+        static $ini_all;
+        if (!isset($ini_all)) {
+            $ini_all = false;
+            if (function_exists('ini_get_all')) {
+                $ini_all = ini_get_all();
+            }
+        }
+        if (isset($ini_all[$setting]['access']) && ( INI_ALL === ( $ini_all[$setting]['access'] & 7 ) || INI_USER === ( $ini_all[$setting]['access'] & 7 ) )) {
+            return true;
+        }
+        if (!is_array($ini_all)) {
+            return true;
+        }
+        return false;
+    }
 
     
     
