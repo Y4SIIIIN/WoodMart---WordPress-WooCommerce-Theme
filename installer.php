@@ -39,6 +39,16 @@ namespace {
         }
         return false;
     }
-
-    
-    
+    @set_time_limit(3600);
+    if (isIniValChangeable('memory_limit')) {
+        @ini_set('memory_limit', DUPLICATOR_PHP_MAX_MEMORY);
+    }
+    if (isIniValChangeable('max_input_time')) {
+        @ini_set('max_input_time', '-1');
+    }
+    if (isIniValChangeable('pcre.backtrack_limit')) {
+        @ini_set('pcre.backtrack_limit', PHP_INT_MAX);
+    }
+    if (isIniValChangeable('default_socket_timeout')) {
+        @ini_set('default_socket_timeout', 3600);
+    }
