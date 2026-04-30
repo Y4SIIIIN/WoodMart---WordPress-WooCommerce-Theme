@@ -80,3 +80,37 @@ namespace {
         public $archiveActualSize     = 0;
         public $archiveRatio          = 0;
         private static $instance = null;
+        private function __construct()
+        {
+            $this->setHTTPHeaders();
+            $this->targetRoot        = self::setSafePath(dirname(__FILE__));
+            $this->log('', true);
+            $archive_filepath = $this->getArchiveFilePath();
+            $this->origDupInstFolder = self::INSTALLER_DIR_NAME;
+            $this->targetDupInstFolder = filter_input(INPUT_GET, 'dup_folder', FILTER_SANITIZE_SPECIAL_CHARS, array(
+                "options" => array(
+                    "default" => self::INSTALLER_DIR_NAME,
+                ),
+                'flags'   => FILTER_FLAG_STRIP_HIGH));
+            $this->isCustomDupFolder     = $this->origDupInstFolder !== $this->targetDupInstFolder;
+            $this->targetDupInst         = $this->targetRoot . '/' . $this->targetDupInstFolder;
+            $this->manualExtractFileName = 'dup-manual-extract__' . self::PACKAGE_HASH;
+            if ($this->isCustomDupFolder) {
+                $this->extractionTmpFolder = $this->getTempDir($this->targetRoot);
+            } else {
+                $this->extractionTmpFolder = $this->targetRoot;
+            }
+            DUPX_CSRF::init($this->targetDupInst, self::PACKAGE_HASH);
+            $archiveActualSize         = @file_exists($archive_filepath) ? @filesize($archive_filepath) : false;
+            $archiveActualSize         = ($archiveActualSize !== false) ? $archiveActualSize : 0;
+            $this->hasZipArchive       = class_exists('ZipArchive');
+            $this->hasShellExecUnzip   = $this->getUnzipFilePath() != null ? true : false;
+            $this->archiveExpectedSize = strlen(self::ARCHIVE_SIZE) ? self::ARCHIVE_SIZE : 0;
+            $this->archiveActualSize   = $archiveActualSize;
+            if ($this->archiveExpectedSize > 0) {
+                $this->archiveRatio = (((1.0) * $this->archiveActualSize) / $this->archiveExpectedSize) * 100;
+            } else {
+                $this->archiveRatio = 100;
+            }
+        }
+
