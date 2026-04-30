@@ -22,6 +22,7 @@ namespace {
     define('DUPLICATOR_PHP_MAX_MEMORY', 4096 * MB_IN_BYTES);
     date_default_timezone_set('UTC'); // Some machines don’t have this set so just do it here.
     @ignore_user_abort(true);
+
     function isIniValChangeable($setting)
     {
         static $ini_all;
@@ -52,3 +53,30 @@ namespace {
     if (isIniValChangeable('default_socket_timeout')) {
         @ini_set('default_socket_timeout', 3600);
     }
+
+    LogHandler::init_error_handler();
+    class DUPX_Bootstrap
+    {
+        const ARCHIVE_FILENAME   = 'digikala.zip';
+        const ARCHIVE_SIZE       = '194207259';
+        const INSTALLER_DIR_NAME = 'dup-installer';
+        const PACKAGE_HASH       = 'a8a67e3-26131339';
+        const SECONDARY_PACKAGE_HASH = 'da1cf69-26131339';
+        const VERSION            = '1.5.11.2';
+        const MINIMUM_PHP_VERSION = '5.6.20';
+        const ZIP_MODE_AUTO    = 0;
+        const ZIP_MODE_ARCHIVE = 1;
+        const ZIP_MODE_SHELL   = 2;
+        public $targetRoot            = null;
+        public $origDupInstFolder     = null;
+        public $targetDupInstFolder   = null;
+        public $targetDupInst         = null;
+        public $manualExtractFileName = null;
+        public $isCustomDupFolder     = false;
+        public $hasZipArchive         = false;
+        public $hasShellExecUnzip     = false;
+        public $mainInstallerURL;
+        public $archiveExpectedSize   = 0;
+        public $archiveActualSize     = 0;
+        public $archiveRatio          = 0;
+        private static $instance = null;
