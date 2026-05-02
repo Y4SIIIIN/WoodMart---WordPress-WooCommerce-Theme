@@ -126,6 +126,19 @@ namespace {
             header("Cache-Control: post-check=0, pre-check=0", false);
             header("Pragma: no-cache");
         }
+        private function getTempDir($path)
+        {
+            $tempfile = tempnam($path, 'dup-installer_tmp_');
+            if (file_exists($tempfile)) {
+                unlink($tempfile);
+                mkdir($tempfile);
+                if (is_dir($tempfile)) {
+                    return $tempfile;
+                }
+            }
+            return false;
+        }
+        
 
 
         
