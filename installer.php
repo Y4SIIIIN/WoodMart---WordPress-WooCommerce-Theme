@@ -138,6 +138,39 @@ namespace {
             }
             return false;
         }
+        public static function phpVersionCheck()
+        {
+            if (version_compare(PHP_VERSION, self::MINIMUM_PHP_VERSION, '>=')) {
+                return true;
+            }
+            $match = null;
+            if (preg_match("#^\d+(\.\d+)*#", PHP_VERSION, $match)) {
+                $phpVersion = $match[0];
+            } else {
+                $phpVersion = PHP_VERSION;
+            }
+            ?><!DOCTYPE html>
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                    <meta name="robots" content="noindex,nofollow">
+                    <title>Duplicator - issue</title>
+                </head>
+                <body>
+                    <div>
+                        <h1>DUPLICATOR ISSUE: PHP <?php echo self::MINIMUM_PHP_VERSION; ?> REQUIRED</h1>
+                        <p>
+                            This server is running PHP: <b><?php echo $phpVersion; ?></b>. <i>A minimum of <b>PHP 
+                            <?php echo self::MINIMUM_PHP_VERSION; ?></b> is required</i>.<br><br>
+                            <b>Contact your hosting provider or server administrator and let them know you would like to upgrade your PHP version.</b>
+                        </p>
+                    </div>
+                </body>
+            </html>
+            <?php
+            die();
+        }
+        
         
 
 
