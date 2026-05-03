@@ -536,6 +536,38 @@ namespace {
             }
             return $error;
         }
+        public static function getCurrentUrl($queryString = true, $requestUri = false, $getParentDirLevel = 0)
+        {
+            if (isset($_SERVER['HTTP_X_ORIGINAL_HOST'])) {
+                $host = $_SERVER['HTTP_X_ORIGINAL_HOST'];
+            } else {
+                $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME']; //WAS SERVER_NAME and caused problems on some boxes
+            }
+            if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+                $_SERVER ['HTTPS'] = 'on';
+            }
+            if (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'https') {
+                $_SERVER ['HTTPS'] = 'on';
+            }
+            if (isset($_SERVER['HTTP_CF_VISITOR'])) {
+                $visitor = json_decode($_SERVER['HTTP_CF_VISITOR']);
+                if ($visitor->scheme == 'https') {
+                    $_SERVER ['HTTPS'] = 'on';
+                }
+            }
+            $protocol = 'http' . ((isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on') ? 's' : '');
+            if ($requestUri) {
+                $serverUrlSelf = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
+            } else {
+                $serverUrlSelf = $_SERVER['SCRIPT_NAME'];
+                for ($i = 0; $i < $getParentDirLevel; $i++) {
+                    $serverUrlSelf = preg_match('/^[\\\\\/]?$/', dirname($serverUrlSelf)) ? '' : dirname($serverUrlSelf);
+                }
+            }
+            $query = ($queryString && isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0 ) ? '?' . $_SERVER['QUERY_STRING'] : '';
+            return $protocol . '://' . $host . $serverUrlSelf . $query;
+        }
+        
         
         
         
