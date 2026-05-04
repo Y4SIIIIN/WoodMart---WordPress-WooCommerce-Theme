@@ -567,6 +567,27 @@ namespace {
             $query = ($queryString && isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0 ) ? '?' . $_SERVER['QUERY_STRING'] : '';
             return $protocol . '://' . $host . $serverUrlSelf . $query;
         }
+        private function fixInstallerPerms()
+        {
+            $file_perms = 'u+rw';
+            $dir_perms  = 'u+rwx';
+            $installer_dir_path = $this->targetDupInstFolder;
+            $this->setPerms($installer_dir_path, $dir_perms, false);
+            $this->setPerms($installer_dir_path, $file_perms, true);
+        }
+        private function setPerms($directory, $perms, $do_files)
+        {
+            if (!$do_files) {
+                $this->setPermsOnItem($directory, $perms);
+            }
+            $item_names = array_diff(scandir($directory), array('.', '..'));
+            foreach ($item_names as $item_name) {
+                $path = "$directory/$item_name";
+                if (($do_files && is_file($path)) || (!$do_files && !is_file($path))) {
+                    $this->setPermsOnItem($path, $perms);
+                }
+            }
+        }
         
         
         
