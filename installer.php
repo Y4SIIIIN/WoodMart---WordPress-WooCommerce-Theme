@@ -597,6 +597,31 @@ namespace {
             }
             return $result;
         }
+        private function compareStrings($oldString, $newString)
+        {
+            $ret = '';
+            for ($i = 0; isset($oldString[$i]) || isset($newString[$i]); $i++) {
+                if (!isset($oldString[$i])) {
+                    $ret .= '<font color="red">' . $newString[$i] . '</font>';
+                    continue;
+                }
+                for ($char = 0; isset($oldString[$i][$char]) || isset($newString[$i][$char]); $char++) {
+                    if (!isset($oldString[$i][$char])) {
+                        $ret .= '<font color="red">' . substr($newString[$i], $char) . '</font>';
+                        break;
+                    } elseif (!isset($newString[$i][$char])) {
+                        break;
+                    }
+                    if (ord($oldString[$i][$char]) != ord($newString[$i][$char])) {
+                        $ret .= '<font color="red">' . $newString[$i][$char] . '</font>';
+                    } else {
+                        $ret .= $newString[$i][$char];
+                    }
+                }
+            }
+            return $ret;
+        }
+
 
         
         
