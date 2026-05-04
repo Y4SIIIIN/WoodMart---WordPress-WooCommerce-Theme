@@ -588,6 +588,16 @@ namespace {
                 }
             }
         }
+        private function setPermsOnItem($path, $perms)
+        {
+            if (($result = self::chmod($path, $perms)) === false) {
+                $this->log("ERROR: Couldn't set permissions of $path<br/>");
+            } else {
+                $this->log("Set permissions of $path<br/>");
+            }
+            return $result;
+        }
+
         
         
         
