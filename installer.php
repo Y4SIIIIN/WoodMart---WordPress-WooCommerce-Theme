@@ -621,6 +621,19 @@ namespace {
             }
             return $ret;
         }
+        public function log($s, $deleteOld = false)
+        {
+            static $logfile = null;
+            if (is_null($logfile)) {
+                $logfile = $this->getBootLogFilePath();
+            }
+            if ($deleteOld && file_exists($logfile)) {
+                @unlink($logfile);
+            }
+            $timestamp = date('M j H:i:s');
+            return @file_put_contents($logfile, '[' . $timestamp . '] ' . self::postprocessLog($s) . "\n", FILE_APPEND);
+        }
+        
 
 
         
