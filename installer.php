@@ -633,6 +633,11 @@ namespace {
             $timestamp = date('M j H:i:s');
             return @file_put_contents($logfile, '[' . $timestamp . '] ' . self::postprocessLog($s) . "\n", FILE_APPEND);
         }
+        public function getBootLogFilePath()
+        {
+            return $this->targetRoot . '/dup-installer-bootlog__' . self::SECONDARY_PACKAGE_HASH . '.txt';
+        }
+        
         
 
 
