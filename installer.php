@@ -637,6 +637,14 @@ namespace {
         {
             return $this->targetRoot . '/dup-installer-bootlog__' . self::SECONDARY_PACKAGE_HASH . '.txt';
         }
+        protected static function postprocessLog($str)
+        {
+            return str_replace(array(
+                self::getArchiveFileHash(),
+                self::PACKAGE_HASH,
+                self::SECONDARY_PACKAGE_HASH
+                ), '[HASH]', $str);
+        }
         
         
 
