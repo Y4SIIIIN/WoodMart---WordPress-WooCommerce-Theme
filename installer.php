@@ -747,6 +747,14 @@ namespace {
             }
             return $success;
         }
+        public static function isWindows()
+        {
+            static $isWindows = null;
+            if (is_null($isWindows)) {
+                $isWindows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+            }
+            return $isWindows;
+        }
 
 
         
