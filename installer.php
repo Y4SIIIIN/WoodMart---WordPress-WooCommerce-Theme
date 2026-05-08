@@ -653,6 +653,101 @@ namespace {
             }
             return $fileHash;
         }
+        private function extractInstallerZipArchive($archive_filepath, $origDupInstFolder, $destination, $checkSubFolder = false)
+        {
+            $success              = true;
+            $zipArchive           = new ZipArchive();
+            $subFolderArchiveList = array();
+            if (($zipOpenRes = $zipArchive->open($archive_filepath)) === true) {
+                $this->log("Successfully opened archive file.");
+                $folder_prefix = $origDupInstFolder . '/';
+                $this->log("Extracting all files from archive within " . $origDupInstFolder);
+                $installer_files_found = 0;
+                for ($i = 0; $i < $zipArchive->numFiles; $i++) {
+                    $stat = $zipArchive->statIndex($i);
+                    if ($checkSubFolder == false) {
+                        $filenameCheck = $stat['name'];
+                        $filename      = $stat['name'];
+                        $tmpSubFolder  = null;
+                    } else {
+                        $safePath = rtrim(self::setSafePath($stat['name']), '/');
+                        $tmpArray = explode('/', $safePath);
+                        if (count($tmpArray) < 2) {
+                            continue;
+                        }
+                        $tmpSubFolder  = $tmpArray[0];
+                        array_shift($tmpArray);
+                        $filenameCheck = implode('/', $tmpArray);
+                        $filename      = $stat['name'];
+                    }
+                    if ($this->startsWith($filenameCheck, $folder_prefix)) {
+                        $installer_files_found++;
+                        if (!empty($tmpSubFolder) && !in_array($tmpSubFolder, $subFolderArchiveList)) {
+                            $subFolderArchiveList[] = $tmpSubFolder;
+                        }
+                        if (basename($filename) === $this->manualExtractFileName) {
+                            $this->log("Skipping manual extract file: {$filename}");
+                            continue;
+                        }
+                        if ($zipArchive->extractTo($destination, $filename) === true) {
+                            $this->log("Success: {$filename} >>> {$destination}");
+                        } else {
+                            $this->log("[ERROR] Error extracting {$filename} from archive archive file");
+                            $success = false;
+                            break;
+                        }
+                    }
+                }
+                if ($checkSubFolder && count($subFolderArchiveList) !== 1) {
+                    $this->log("Error: Multiple dup subfolder archive");
+                    $success = false;
+                } else {
+                    if ($checkSubFolder) {
+                        $this->moveUpfromSubFolder($destination . '/' . $subFolderArchiveList[0], true);
+                    }
+                    $lib_directory     = $destination . '/' . $origDupInstFolder . '/lib';
+                    $snaplib_directory = $lib_directory . '/snaplib';
+                    if (!file_exists($snaplib_directory)) {
+                        $folder_prefix = 'snaplib/';
+                        $destination   = $lib_directory;
+                        for ($i = 0; $i < $zipArchive->numFiles; $i++) {
+                            $stat     = $zipArchive->statIndex($i);
+                            $filename = $stat['name'];
+                            if ($this->startsWith($filename, $folder_prefix)) {
+                                $installer_files_found++;
+                                if ($zipArchive->extractTo($destination, $filename) === true) {
+                                    $this->log("Success: {$filename} >>> {$destination}");
+                                } else {
+                                    $this->log("[ERROR] Error extracting {$filename} from archive archive file");
+                                    $success = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if ($zipArchive->close() === true) {
+                    $this->log("Successfully closed archive file");
+                } else {
+                    $this->log("[ERROR] Problem closing archive file");
+                    $success = false;
+                }
+                if ($success != false && $installer_files_found < 10) {
+                    if ($checkSubFolder) {
+                        $this->log("[ERROR] Couldn't find the installer directory in the archive!");
+                        $success = false;
+                    } else {
+                        $this->log("[ERROR] Couldn't find the installer directory in archive root! Check subfolder");
+                        $this->extractInstallerZipArchive($archive_filepath, $origDupInstFolder, $destination, true);
+                    }
+                }
+            } else {
+                $this->log("[ERROR] Couldn't open archive archive file with ZipArchive CODE[" . $zipOpenRes . "]");
+                $success = false;
+            }
+            return $success;
+        }
+
 
         
         
