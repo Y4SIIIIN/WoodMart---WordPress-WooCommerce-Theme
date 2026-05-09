@@ -755,6 +755,18 @@ namespace {
             }
             return $isWindows;
         }
+        public static function maxPathLen()
+        {
+            static $maxPath = null;
+            if (is_null($maxPath)) {
+                if (defined('PHP_MAXPATHLEN')) {
+                    $maxPath = PHP_MAXPATHLEN;
+                } else {
+                    $maxPath = self::isWindows() ? 260 : 4096;
+                }
+            }
+            return $maxPath;
+        }
 
 
         
