@@ -767,6 +767,23 @@ namespace {
             }
             return $maxPath;
         }
+        public static function setPermsToDefaultR($directory)
+        {
+            $dir      = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
+            $iterator = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::SELF_FIRST);
+            $defaultFilePermission = 0666 & ~umask();
+            $defaultDirPermission  = 0777 & ~umask();
+            foreach ($iterator as $item) {
+                if ($item->isFile()) {
+                    self::chmod($item->getPathname(), $defaultFilePermission);
+                }
+                if ($item->isDir()) {
+                    self::chmod($item->getPathname(), $defaultDirPermission);
+                }
+            }
+        }
+        
+
 
 
         
