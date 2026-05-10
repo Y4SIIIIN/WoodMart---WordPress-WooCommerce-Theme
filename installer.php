@@ -782,6 +782,90 @@ namespace {
                 }
             }
         }
+        public static function chmod($file, $mode)
+        {
+            if (!file_exists($file)) {
+                return false;
+            }
+            $octalMode = 0;
+            if (is_int($mode)) {
+                $octalMode = $mode;
+            } elseif (is_string($mode)) {
+                $mode = trim($mode);
+                if (preg_match('/([0-7]{1,3})/', $mode)) {
+                    $octalMode = intval(('0' . $mode), 8);
+                } elseif (preg_match_all('/(a|[ugo]{1,3})([-=+])([rwx]{1,3})/', $mode, $gMatch, PREG_SET_ORDER)) {
+                    if (!function_exists('fileperms')) {
+                        return false;
+                    }
+                    $octalMode = (fileperms($file) & 0777);
+                    foreach ($gMatch as $matches) {
+                        $group = $matches[1];
+                        if ($group === 'a') {
+                            $group = 'ugo';
+                        }
+                        $action = $matches[2];
+                        $gPerms = $matches[3];
+                        $octalGroupMode = 0;
+                        $subPerm = 0;
+                        $subPerm += strpos($gPerms, 'x') !== false ? 1 : 0; // mask 001
+                        $subPerm += strpos($gPerms, 'w') !== false ? 2 : 0; // mask 010
+                        $subPerm += strpos($gPerms, 'r') !== false ? 4 : 0; // mask 100
+                        $ugoLen = strlen($group);
+                        if ($action === '=') {
+                            $ugoMaskInvert = 0777;
+                            for ($i = 0; $i < $ugoLen; $i++) {
+                                switch ($group[$i]) {
+                                    case 'u':
+                                        $octalGroupMode = $octalGroupMode | $subPerm << 6; // mask xxx000000
+                                        $ugoMaskInvert  = $ugoMaskInvert & 077;
+                                        break;
+                                    case 'g':
+                                        $octalGroupMode = $octalGroupMode | $subPerm << 3; // mask 000xxx000
+                                        $ugoMaskInvert  = $ugoMaskInvert & 0707;
+                                        break;
+                                    case 'o':
+                                        $octalGroupMode = $octalGroupMode | $subPerm; // mask 000000xxx
+                                        $ugoMaskInvert  = $ugoMaskInvert & 0770;
+                                        break;
+                                }
+                            }
+                            $octalMode = $octalMode & ($ugoMaskInvert | $octalGroupMode);
+                        } else {
+                            for ($i = 0; $i < $ugoLen; $i++) {
+                                switch ($group[$i]) {
+                                    case 'u':
+                                        $octalGroupMode = $octalGroupMode | $subPerm << 6; // mask xxx000000
+                                        break;
+                                    case 'g':
+                                        $octalGroupMode = $octalGroupMode | $subPerm << 3; // mask 000xxx000
+                                        break;
+                                    case 'o':
+                                        $octalGroupMode = $octalGroupMode | $subPerm; // mask 000000xxx
+                                        break;
+                                }
+                            }
+                            switch ($action) {
+                                case '+':
+                                    $octalMode = $octalMode | $octalGroupMode;
+                                    break;
+                                case '-':
+                                    $octalMode = $octalMode & ~$octalGroupMode;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (function_exists('fileperms') && $octalMode === (fileperms($file) & 0777)) {
+                return true;
+            }
+            if (!function_exists('chmod')) {
+                return false;
+            }
+            return @chmod($file, $octalMode);
+        }
+        
         
 
 
