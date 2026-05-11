@@ -865,6 +865,12 @@ namespace {
             }
             return @chmod($file, $octalMode);
         }
+        public static function checkInputValidInt($input)
+        {
+            return (filter_var($input, FILTER_VALIDATE_INT) === 0 || filter_var($input, FILTER_VALIDATE_INT));
+        }
+
+
         
         
 
