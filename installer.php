@@ -869,6 +869,22 @@ namespace {
         {
             return (filter_var($input, FILTER_VALIDATE_INT) === 0 || filter_var($input, FILTER_VALIDATE_INT));
         }
+        public static function mkdir($path, $mode = 0777, $recursive = false, $context = null)
+        {
+            if (strlen($path) > self::maxPathLen()) {
+                throw new Exception('Skipping a file that exceeds allowed max path length [' . self::maxPathLen() . ']. File: ' . $filepath);
+            }
+            if (!file_exists($path)) {
+                if (!function_exists('mkdir')) {
+                    return false;
+                }
+                if (!@mkdir($path, 0777, $recursive)) {
+                    return false;
+                }
+            }
+            return self::chmod($path, $mode);
+        }
+
 
 
         
